@@ -1,0 +1,5 @@
+{
+  "name": "QR Code Generator",
+  "description": "A stylish and easy-to-use application to generate and customize QR codes. Enter any text or URL, adjust colors and size, and download your QR code instantly.",
+  "requestFramePermissions": []
+}
