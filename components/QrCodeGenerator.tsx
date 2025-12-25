@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import QRCode from 'qrcode';
-import { QrCodeIcon, ArrowDownTrayIcon, PaintBrushIcon, ArrowUpTrayIcon, TrashIcon, SparklesIcon, LinkIcon, WifiIcon, UserCircleIcon, EnvelopeIcon } from './Icons';
+import { QrCodeIcon, ArrowDownTrayIcon, PaintBrushIcon, ArrowUpTrayIcon, TrashIcon, SparklesIcon, LinkIcon, WifiIcon, UserCircleIcon, EnvelopeIcon, EyeIcon, StarIcon } from './Icons';
 
 type QRType = 'text' | 'wifi' | 'vcard' | 'email';
+type EyeStyle = 'square' | 'circle' | 'rounded';
+type DotStyle = 'squares' | 'dots' | 'rounded' | 'diamonds' | 'stars';
 
 interface QROptions {
   errorCorrectionLevel: 'L' | 'M' | 'Q' | 'H';
@@ -41,7 +43,12 @@ const QrCodeGenerator: React.FC = () => {
   
   const [qrString, setQrString] = useState('');
   const [logo, setLogo] = useState<string | null>(null);
-  const [dotStyle, setDotStyle] = useState<'squares' | 'dots'>('squares');
+  
+  // Customization States
+  const [eyeStyle, setEyeStyle] = useState<EyeStyle>('square');
+  const [dotStyle, setDotStyle] = useState<DotStyle>('squares');
+  const [logoFrame, setLogoFrame] = useState<boolean>(true);
+
   const [gradient, setGradient] = useState<GradientOptions>({
       enabled: false,
       color1: '#0078D4',
@@ -107,9 +114,11 @@ const QrCodeGenerator: React.FC = () => {
         const moduleCount = qr.modules.size;
         const moduleSize = options.width / moduleCount;
 
+        // Clear and set background
         ctx.fillStyle = options.color.light;
         ctx.fillRect(0, 0, options.width, options.width);
 
+        // Prepare Foreground Gradient/Color
         let foregroundFill: string | CanvasGradient = options.color.dark;
         if (gradient.enabled) {
             const grad = ctx.createLinearGradient(0, 0, options.width, options.width);
@@ -119,37 +128,129 @@ const QrCodeGenerator: React.FC = () => {
         }
         ctx.fillStyle = foregroundFill;
         
+        // Helper: Check if module is part of the 3 large finder patterns (eyes)
+        const isFinderPattern = (r: number, c: number) => {
+            if (r < 7 && c < 7) return true; // Top Left
+            if (r < 7 && c >= moduleCount - 7) return true; // Top Right
+            if (r >= moduleCount - 7 && c < 7) return true; // Bottom Left
+            return false;
+        };
+
+        // Draw Data Modules
         for (let row = 0; row < moduleCount; row++) {
             for (let col = 0; col < moduleCount; col++) {
                 if (modules[row * moduleCount + col]) {
-                    if (dotStyle === 'dots') {
-                        ctx.beginPath();
-                        ctx.arc(
-                            col * moduleSize + moduleSize / 2,
-                            row * moduleSize + moduleSize / 2,
-                            (moduleSize / 2) * 0.8,
-                            0,
-                            2 * Math.PI
-                        );
-                        ctx.fill();
-                    } else {
-                        ctx.fillRect(col * moduleSize, row * moduleSize, moduleSize, moduleSize);
+                    // If it is a finder pattern, skip it here (we draw custom eyes later)
+                    if (isFinderPattern(row, col)) continue;
+
+                    const x = col * moduleSize;
+                    const y = row * moduleSize;
+                    const cx = x + moduleSize / 2;
+                    const cy = y + moduleSize / 2;
+
+                    switch (dotStyle) {
+                        case 'dots':
+                            ctx.beginPath();
+                            ctx.arc(cx, cy, (moduleSize / 2) * 0.85, 0, 2 * Math.PI);
+                            ctx.fill();
+                            break;
+                        case 'rounded':
+                             ctx.beginPath();
+                             ctx.roundRect(x, y, moduleSize, moduleSize, moduleSize * 0.3);
+                             ctx.fill();
+                             break;
+                        case 'diamonds':
+                             ctx.beginPath();
+                             ctx.moveTo(cx, y);
+                             ctx.lineTo(x + moduleSize, cy);
+                             ctx.lineTo(cx, y + moduleSize);
+                             ctx.lineTo(x, cy);
+                             ctx.closePath();
+                             ctx.fill();
+                             break;
+                        case 'stars':
+                             drawStar(ctx, cx, cy, 4, moduleSize/1.8, moduleSize/4);
+                             ctx.fill();
+                             break;
+                        case 'squares':
+                        default:
+                            ctx.fillRect(x, y, moduleSize + 0.5, moduleSize + 0.5); // +0.5 to avoid gaps
+                            break;
                     }
                 }
             }
         }
 
+        // Helper to draw custom Eye
+        const drawEye = (startRow: number, startCol: number) => {
+             const startX = startCol * moduleSize;
+             const startY = startRow * moduleSize;
+             const outerSize = 7 * moduleSize;
+             const innerSize = 3 * moduleSize;
+             const outerCenter = outerSize / 2;
+             
+             // Save context to translate to eye position
+             ctx.save();
+             ctx.translate(startX, startY);
+
+             // Draw Outer Shape
+             ctx.beginPath();
+             if (eyeStyle === 'circle') {
+                 ctx.arc(outerCenter, outerCenter, outerSize / 2, 0, Math.PI * 2);
+                 ctx.moveTo(outerCenter + (outerSize/2) - moduleSize, outerCenter); // Move to create hole
+                 ctx.arc(outerCenter, outerCenter, (outerSize/2) - moduleSize, 0, Math.PI * 2, true); // Counter clockwise for hole
+             } else if (eyeStyle === 'rounded') {
+                 ctx.roundRect(0, 0, outerSize, outerSize, moduleSize * 2);
+                 ctx.rect(moduleSize, moduleSize, outerSize - 2*moduleSize, outerSize - 2*moduleSize); // Hole
+             } else { // Square
+                 ctx.rect(0, 0, outerSize, outerSize);
+                 ctx.rect(moduleSize, moduleSize, outerSize - 2*moduleSize, outerSize - 2*moduleSize); // Hole
+             }
+             // Use evenodd rule to knock out the hole
+             ctx.fill('evenodd');
+
+             // Draw Inner Shape
+             ctx.beginPath();
+             const innerOffset = 2 * moduleSize;
+             if (eyeStyle === 'circle') {
+                 ctx.arc(outerCenter, outerCenter, innerSize / 2, 0, Math.PI * 2);
+             } else if (eyeStyle === 'rounded') {
+                 ctx.roundRect(innerOffset, innerOffset, innerSize, innerSize, moduleSize);
+             } else {
+                 ctx.rect(innerOffset, innerOffset, innerSize, innerSize);
+             }
+             ctx.fill();
+
+             ctx.restore();
+        };
+
+        // Draw 3 Eyes
+        drawEye(0, 0);
+        drawEye(0, moduleCount - 7);
+        drawEye(moduleCount - 7, 0);
+
+        // Draw Logo
         if (logo) {
             const logoImg = new Image();
             logoImg.src = logo;
             logoImg.onload = () => {
-                const logoSize = options.width * 0.25;
+                const logoSize = options.width * 0.22;
                 const logoX = (options.width - logoSize) / 2;
                 const logoY = (options.width - logoSize) / 2;
-                const padding = 5;
+                
+                // Draw Frame/Padding if enabled
+                if (logoFrame) {
+                     const framePadding = 5;
+                     ctx.fillStyle = options.color.light;
+                     if (eyeStyle === 'circle' || eyeStyle === 'rounded') {
+                         ctx.beginPath();
+                         ctx.roundRect(logoX - framePadding, logoY - framePadding, logoSize + framePadding * 2, logoSize + framePadding * 2, 10);
+                         ctx.fill();
+                     } else {
+                         ctx.fillRect(logoX - framePadding, logoY - framePadding, logoSize + framePadding * 2, logoSize + framePadding * 2);
+                     }
+                }
 
-                ctx.fillStyle = options.color.light;
-                ctx.fillRect(logoX - padding, logoY - padding, logoSize + padding * 2, logoSize + padding * 2);
                 ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
                 setIsLoading(false);
             };
@@ -161,57 +262,136 @@ const QrCodeGenerator: React.FC = () => {
         console.error(err);
         setIsLoading(false);
     }
-  }, [qrString, options, logo, dotStyle, gradient]);
+  }, [qrString, options, logo, dotStyle, eyeStyle, logoFrame, gradient]);
 
   useEffect(() => {
     drawQrCode();
   }, [drawQrCode]);
 
-  const generateSvgString = (): string => {
-    if (!qrString) return '';
-    try {
-      const qr = QRCode.create(qrString, { errorCorrectionLevel: options.errorCorrectionLevel, margin: options.margin });
-      const moduleCount = qr.modules.size;
-      const moduleSize = 10;
-      const svgSize = moduleCount * moduleSize;
-      let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${options.width}" height="${options.width}" viewBox="0 0 ${svgSize} ${svgSize}">`;
-      svg += `<rect width="100%" height="100%" fill="${options.color.light}" />`;
+  // Helper for stars
+  const drawStar = (ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes: number, outerRadius: number, innerRadius: number) => {
+    let rot = Math.PI / 2 * 3;
+    let x = cx;
+    let y = cy;
+    let step = Math.PI / spikes;
 
-      if (gradient.enabled) {
-          svg += `<defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${gradient.color1}"/><stop offset="100%" stop-color="${gradient.color2}"/></linearGradient></defs>`;
-      }
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerRadius);
+    for (let i = 0; i < spikes; i++) {
+        x = cx + Math.cos(rot) * outerRadius;
+        y = cy + Math.sin(rot) * outerRadius;
+        ctx.lineTo(x, y);
+        rot += step;
 
-      const fill = gradient.enabled ? 'url(#grad)' : options.color.dark;
-      let pathData = '';
-
-      for (let row = 0; row < moduleCount; row++) {
-          for (let col = 0; col < moduleCount; col++) {
-              if (qr.modules.data[row * moduleCount + col]) {
-                  if (dotStyle === 'dots') {
-                      svg += `<circle cx="${col * moduleSize + moduleSize / 2}" cy="${row * moduleSize + moduleSize / 2}" r="${(moduleSize / 2) * 0.9}" fill="${fill}" />`;
-                  } else {
-                      pathData += `M${col * moduleSize},${row * moduleSize}h${moduleSize}v${moduleSize}h-${moduleSize}z`;
-                  }
-              }
-          }
-      }
-      if (pathData) {
-          svg += `<path d="${pathData}" fill="${fill}" />`;
-      }
-
-      if (logo) {
-          const logoSize = svgSize * 0.25;
-          const logoX = (svgSize - logoSize) / 2;
-          svg += `<image href="${logo}" x="${logoX}" y="${logoX}" width="${logoSize}" height="${logoSize}" />`;
-      }
-
-      svg += `</svg>`;
-      return svg;
-    } catch (err) {
-      console.error(err);
-      return '';
+        x = cx + Math.cos(rot) * innerRadius;
+        y = cy + Math.sin(rot) * innerRadius;
+        ctx.lineTo(x, y);
+        rot += step;
     }
-  };
+    ctx.lineTo(cx, cy - outerRadius);
+    ctx.closePath();
+  }
+
+  const generateSvgString = (): string => {
+      // NOTE: For simplicity, the SVG export in this demo will use the standard geometric shapes.
+      // Advanced shapes like stars in SVG would require complex path generation logic similar to the canvas.
+      // We will map custom styles to closest SVG equivalents or standard shapes.
+      if (!qrString) return '';
+      try {
+        const qr = QRCode.create(qrString, { errorCorrectionLevel: options.errorCorrectionLevel, margin: options.margin });
+        const moduleCount = qr.modules.size;
+        const moduleSize = 10;
+        const svgSize = moduleCount * moduleSize;
+        
+        let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${options.width}" height="${options.width}" viewBox="0 0 ${svgSize} ${svgSize}">`;
+        svg += `<rect width="100%" height="100%" fill="${options.color.light}" />`;
+  
+        if (gradient.enabled) {
+            svg += `<defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${gradient.color1}"/><stop offset="100%" stop-color="${gradient.color2}"/></linearGradient></defs>`;
+        }
+  
+        const fill = gradient.enabled ? 'url(#grad)' : options.color.dark;
+  
+        const isFinderPattern = (r: number, c: number) => {
+             if (r < 7 && c < 7) return true;
+             if (r < 7 && c >= moduleCount - 7) return true;
+             if (r >= moduleCount - 7 && c < 7) return true;
+             return false;
+        };
+
+        // Draw Data Modules
+        for (let row = 0; row < moduleCount; row++) {
+            for (let col = 0; col < moduleCount; col++) {
+                if (qr.modules.data[row * moduleCount + col]) {
+                    if (isFinderPattern(row, col)) continue;
+
+                    const cx = col * moduleSize + moduleSize / 2;
+                    const cy = row * moduleSize + moduleSize / 2;
+                    
+                    if (dotStyle === 'dots') {
+                        svg += `<circle cx="${cx}" cy="${cy}" r="${(moduleSize / 2) * 0.85}" fill="${fill}" />`;
+                    } else if (dotStyle === 'diamonds') {
+                        svg += `<polygon points="${cx},${row * moduleSize} ${col * moduleSize + moduleSize},${cy} ${cx},${row * moduleSize + moduleSize} ${col * moduleSize},${cy}" fill="${fill}" />`;
+                    } else if (dotStyle === 'rounded') {
+                         svg += `<rect x="${col * moduleSize}" y="${row * moduleSize}" width="${moduleSize}" height="${moduleSize}" rx="${moduleSize * 0.3}" fill="${fill}" />`;
+                    } else {
+                        // Squares and Fallback for Stars (to keep SVG simple for now)
+                        svg += `<rect x="${col * moduleSize}" y="${row * moduleSize}" width="${moduleSize}" height="${moduleSize}" fill="${fill}" />`;
+                    }
+                }
+            }
+        }
+        
+        // Draw Finder Patterns
+        const drawSvgEye = (r: number, c: number) => {
+            const x = c * moduleSize;
+            const y = r * moduleSize;
+            const outerSize = 7 * moduleSize;
+            const innerSize = 3 * moduleSize;
+            
+            // Outer
+            if (eyeStyle === 'circle') {
+                svg += `<circle cx="${x + outerSize/2}" cy="${y + outerSize/2}" r="${outerSize/2}" fill="${fill}" />`;
+                svg += `<circle cx="${x + outerSize/2}" cy="${y + outerSize/2}" r="${outerSize/2 - moduleSize}" fill="${options.color.light}" />`;
+            } else if (eyeStyle === 'rounded') {
+                svg += `<rect x="${x}" y="${y}" width="${outerSize}" height="${outerSize}" rx="${moduleSize * 2}" fill="${fill}" />`;
+                svg += `<rect x="${x + moduleSize}" y="${y + moduleSize}" width="${outerSize - 2*moduleSize}" height="${outerSize - 2*moduleSize}" rx="${moduleSize}" fill="${options.color.light}" />`;
+            } else {
+                svg += `<rect x="${x}" y="${y}" width="${outerSize}" height="${outerSize}" fill="${fill}" />`;
+                svg += `<rect x="${x + moduleSize}" y="${y + moduleSize}" width="${outerSize - 2*moduleSize}" height="${outerSize - 2*moduleSize}" fill="${options.color.light}" />`;
+            }
+            
+            // Inner
+            const innerOffset = 2 * moduleSize;
+            if (eyeStyle === 'circle') {
+                svg += `<circle cx="${x + outerSize/2}" cy="${y + outerSize/2}" r="${innerSize/2}" fill="${fill}" />`;
+            } else if (eyeStyle === 'rounded') {
+                svg += `<rect x="${x + innerOffset}" y="${y + innerOffset}" width="${innerSize}" height="${innerSize}" rx="${moduleSize}" fill="${fill}" />`;
+            } else {
+                svg += `<rect x="${x + innerOffset}" y="${y + innerOffset}" width="${innerSize}" height="${innerSize}" fill="${fill}" />`;
+            }
+        }
+        
+        drawSvgEye(0, 0);
+        drawSvgEye(0, moduleCount - 7);
+        drawSvgEye(moduleCount - 7, 0);
+  
+        if (logo) {
+            const logoSize = svgSize * 0.22;
+            const logoX = (svgSize - logoSize) / 2;
+            if (logoFrame) {
+                 svg += `<rect x="${logoX - 5}" y="${logoX - 5}" width="${logoSize + 10}" height="${logoSize + 10}" fill="${options.color.light}" rx="10" />`;
+            }
+            svg += `<image href="${logo}" x="${logoX}" y="${logoX}" width="${logoSize}" height="${logoSize}" />`;
+        }
+  
+        svg += `</svg>`;
+        return svg;
+      } catch (err) {
+        console.error(err);
+        return '';
+      }
+    };
 
   const handleDownload = (format: 'png' | 'svg') => {
     if (format === 'png') {
@@ -425,15 +605,44 @@ const QrCodeGenerator: React.FC = () => {
                         )}
                     </div>
 
+                     {/* SHAPE CUSTOMIZATION */}
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                         <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                <EyeIcon className="h-4 w-4 mr-1"/> Bentuk Mata (Corner)
+                            </label>
+                            <div className="flex gap-2">
+                                {(['square', 'rounded', 'circle'] as EyeStyle[]).map((style) => (
+                                    <button 
+                                        key={style} 
+                                        onClick={() => setEyeStyle(style)} 
+                                        className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${eyeStyle === style ? 'bg-blue-50 border-blue-500 text-blue-700 ring-1 ring-blue-500' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                                    >
+                                        {style === 'square' ? 'Kotak' : style === 'rounded' ? 'Lengkun' : 'Bulat'}
+                                    </button>
+                                ))}
+                            </div>
+                         </div>
+                         <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                <StarIcon className="h-4 w-4 mr-1"/> Corak Titik (Pattern)
+                            </label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {(['squares', 'dots', 'rounded', 'diamonds', 'stars'] as DotStyle[]).map((style) => (
+                                    <button 
+                                        key={style} 
+                                        onClick={() => setDotStyle(style)} 
+                                        className={`py-2 px-1 text-[10px] font-bold rounded-lg border transition-all ${dotStyle === style ? 'bg-blue-50 border-blue-500 text-blue-700 ring-1 ring-blue-500' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                                    >
+                                        {style.charAt(0).toUpperCase() + style.slice(1)}
+                                    </button>
+                                ))}
+                            </div>
+                         </div>
+                     </div>
+
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                          <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Bentuk Titik</label>
-                                <div className="flex bg-gray-100 p-1 rounded-lg">
-                                    <button onClick={() => setDotStyle('squares')} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${dotStyle === 'squares' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>Kotak</button>
-                                    <button onClick={() => setDotStyle('dots')} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${dotStyle === 'dots' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>Bulat</button>
-                                </div>
-                            </div>
                             <div>
                                 <label htmlFor="qr-error-level" className="block text-sm font-semibold text-gray-700 mb-2">
                                     Tahap Kerosakan
@@ -451,11 +660,17 @@ const QrCodeGenerator: React.FC = () => {
                             <label className="block text-sm font-semibold text-gray-700 mb-2">Logo Tengah (Optional)</label>
                             <input type="file" accept="image/*" ref={logoInputRef} onChange={handleLogoUpload} className="hidden" />
                             {logo ? (
-                                <div className="flex items-center justify-between p-2 border rounded-lg bg-gray-50">
-                                    <img src={logo} alt="Logo preview" className="w-10 h-10 rounded object-cover border bg-white"/>
-                                    <button onClick={() => setLogo(null)} className="text-xs font-bold text-red-600 hover:text-red-800 px-2 py-1">
-                                        Buang
-                                    </button>
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between p-2 border rounded-lg bg-gray-50">
+                                        <img src={logo} alt="Logo preview" className="w-10 h-10 rounded object-cover border bg-white"/>
+                                        <button onClick={() => setLogo(null)} className="text-xs font-bold text-red-600 hover:text-red-800 px-2 py-1">
+                                            Buang
+                                        </button>
+                                    </div>
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                        <input type="checkbox" checked={logoFrame} onChange={(e) => setLogoFrame(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500 border-gray-300"/>
+                                        <span className="text-sm font-medium text-gray-700">Bingkai Putih (Supaya Jelas)</span>
+                                    </label>
                                 </div>
                             ) : (
                                 <button onClick={() => logoInputRef.current?.click()} className="w-full h-[76px] flex flex-col items-center justify-center px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-50 hover:border-blue-400 hover:text-blue-600 transition">
@@ -465,7 +680,7 @@ const QrCodeGenerator: React.FC = () => {
                             )}
                              <div className="mt-4">
                                 <label htmlFor="qr-size" className="block text-sm font-semibold text-gray-700 flex justify-between"><span>Saiz</span> <span className="text-gray-400 font-normal">{options.width}px</span></label>
-                                <input id="qr-size" type="range" min="128" max="512" step="16" value={options.width} onChange={(e) => handleOptionChange('width', parseInt(e.target.value, 10))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2"/>
+                                <input id="qr-size" type="range" min="128" max="1024" step="32" value={options.width} onChange={(e) => handleOptionChange('width', parseInt(e.target.value, 10))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2"/>
                             </div>
                          </div>
                      </div>
