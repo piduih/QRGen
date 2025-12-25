@@ -13,24 +13,36 @@ export const LegalModal: React.FC<LegalModalProps> = ({ isOpen, type, onClose })
 
   const content = {
     terms: {
-      title: 'The Rules (Terms of Service)',
+      title: 'Janji Kami (Syarat Penggunaan)',
       body: (
-        <div className="space-y-4 text-gray-600 text-sm leading-relaxed">
-          <p><strong>1. Hello!</strong><br/>Welcome to the QR Code Magic Maker. By using this fun tool, you agree to these simple rules.</p>
-          <p><strong>2. It's Free!</strong><br/>You can use this for anything you want—for fun, for school, or for your business. It's completely free.</p>
-          <p><strong>3. Test It First</strong><br/>We tried our best to make this work perfectly ("as is"), but computers can be tricky. Please test your QR code to make sure it works before you print it on a thousand t-shirts! We aren't responsible if it doesn't scan later.</p>
-          <p><strong>4. Be Nice</strong><br/>Don't use this tool to make bad things. That's all!</p>
+        <div className="space-y-4 text-gray-700 text-sm leading-relaxed font-medium">
+          <p className="text-lg font-bold text-gray-900">Apa yang anda perlu tahu:</p>
+          
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <p className="font-bold text-blue-800">1. Guna Sampai Lebam (Percuma)</p>
+            <p className="mt-1">Alat ini percuma 100%. Anda boleh buat 1 kod QR atau 1 juta kod QR. Kami tak akan caj anda satu sen pun. Guna untuk bisnes, sekolah, atau suka-suka.</p>
+          </div>
+
+          <p><strong>2. Tiada Jaminan (As-Is)</strong><br/>Kami dah cuba sehabis baik untuk pastikan ia power. Tapi, tolong test dulu kod QR anda sebelum cetak atas 1,000 helai baju. Kalau tak boleh scan nanti, jangan marah kami ya.</p>
+          
+          <p><strong>3. Jangan Buat Hal</strong><br/>Jangan guna alat ini untuk buat benda jahat atau menipu orang. Jadi orang baik.</p>
         </div>
       )
     },
     privacy: {
-      title: 'Your Secrets (Privacy Policy)',
+      title: 'Data Anda Selamat (Privasi)',
       body: (
-        <div className="space-y-4 text-gray-600 text-sm leading-relaxed">
-          <p><strong>1. No Peeking!</strong><br/>We take your privacy seriously. This app runs entirely on <strong>your computer</strong> (in your browser).</p>
-          <p><strong>2. We Don't See Anything</strong><br/>When you type your Wi-Fi password or messages, they stay right here. We don't send them to the internet or save them on our servers.</p>
-          <p><strong>3. No Tracking Cookies</strong><br/>We don't use creepy cookies to follow you around the internet. We just want to help you make cool codes.</p>
-          <p><strong>4. Be Careful with Links</strong><br/>If you make a QR code that leads to a website, remember that <em>that</em> website might have its own rules. Stay safe!</p>
+        <div className="space-y-4 text-gray-700 text-sm leading-relaxed font-medium">
+          <p className="text-lg font-bold text-gray-900">Kenapa anda boleh percaya kami:</p>
+          
+          <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+            <p className="font-bold text-green-800">1. Kami Tak Simpan Data</p>
+            <p className="mt-1">Segala yang anda taip (password WiFi, link rahsia) kekal dalam browser anda. Ia TAK dihantar ke server kami. Anda selamat.</p>
+          </div>
+
+          <p><strong>2. Tiada Penjejak Jahat</strong><br/>Kami tak pasang "cctv" (cookies) untuk intip anda melayari internet. Kami cuma nak anda dapat kod QR yang cantik.</p>
+          
+          <p><strong>3. Hati-hati Dengan Link</strong><br/>Kalau anda buat kod QR yang bawa ke website orang lain, ingat, website itu bukan tanggungjawab kami. Jaga diri!</p>
         </div>
       )
     }
@@ -49,22 +61,22 @@ export const LegalModal: React.FC<LegalModalProps> = ({ isOpen, type, onClose })
       
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity" 
+        className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" 
         onClick={onClose}
       />
       
       {/* Modal Content */}
       <div 
-        className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]"
+        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]"
         style={{ animation: 'modalFadeIn 0.2s ease-out' }}
       >
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
-          <h3 className="text-lg font-semibold text-gray-900">{currentContent.title}</h3>
+        <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+          <h3 className="text-xl font-bold text-gray-900">{currentContent.title}</h3>
           <button 
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+            className="text-gray-400 hover:text-gray-800 transition-colors p-2 rounded-full hover:bg-gray-100"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </button>
@@ -74,12 +86,12 @@ export const LegalModal: React.FC<LegalModalProps> = ({ isOpen, type, onClose })
           {currentContent.body}
         </div>
         
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end shrink-0">
+        <div className="px-6 py-5 bg-gray-50 border-t border-gray-100 flex justify-end shrink-0">
           <button 
             onClick={onClose}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            className="w-full sm:w-auto px-6 py-3 bg-gray-900 text-white rounded-lg text-sm font-bold hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-transform active:scale-95"
           >
-            Got it, thanks!
+            Faham, Terima Kasih!
           </button>
         </div>
       </div>

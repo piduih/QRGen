@@ -21,12 +21,13 @@ interface GradientOptions {
     color2: string;
 }
 
+// Alex Hormozi DNA: Naming things with Authority
 const colorPalettes = [
-    { name: 'Dark Mode', dark: '#1f2937', light: '#ffffff' }, 
-    { name: 'Sky Blue', dark: '#0078D4', light: '#f0f8ff' },
-    { name: 'Forest', dark: '#107C10', light: '#f0fff0' },
-    { name: 'Lava', dark: '#D83B01', light: '#fff5f2' },
-    { name: 'Lemon', dark: '#FFB900', light: '#fffff0' },
+    { name: 'CEO Style (Gelap)', dark: '#1f2937', light: '#ffffff' }, 
+    { name: 'Biru Korporat', dark: '#0078D4', light: '#f0f8ff' },
+    { name: 'Duit (Hijau)', dark: '#107C10', light: '#f0fff0' },
+    { name: 'Api (Merah)', dark: '#D83B01', light: '#fff5f2' },
+    { name: 'Gold (Mewah)', dark: '#FFB900', light: '#fffff0' },
 ];
 
 const QrCodeGenerator: React.FC = () => {
@@ -218,7 +219,7 @@ const QrCodeGenerator: React.FC = () => {
         if (!canvas) return;
         const link = document.createElement('a');
         link.href = canvas.toDataURL('image/png');
-        link.download = 'qrcode.png';
+        link.download = `qr-code-padu-${Date.now()}.png`; // Better filename
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -229,7 +230,7 @@ const QrCodeGenerator: React.FC = () => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'qrcode.svg';
+        link.download = `qr-code-padu-${Date.now()}.svg`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -270,10 +271,10 @@ const QrCodeGenerator: React.FC = () => {
 
   const renderTabs = () => {
     const tabs = [
-      { id: 'text', icon: LinkIcon, label: 'Website/Link' },
-      { id: 'wifi', icon: WifiIcon, label: 'Wi-Fi Login' },
-      { id: 'vcard', icon: UserCircleIcon, label: 'My Contact' },
-      { id: 'email', icon: EnvelopeIcon, label: 'Send Email' },
+      { id: 'text', icon: LinkIcon, label: 'Website / Link' },
+      { id: 'wifi', icon: WifiIcon, label: 'Login WiFi' },
+      { id: 'vcard', icon: UserCircleIcon, label: 'Kad Nama' },
+      { id: 'email', icon: EnvelopeIcon, label: 'Hantar Email' },
     ];
     return (
       <div className="flex border-b border-gray-200">
@@ -281,15 +282,14 @@ const QrCodeGenerator: React.FC = () => {
           <button
             key={tab.id}
             onClick={() => setQrType(tab.id as QRType)}
-            className={`flex-1 flex items-center justify-center p-3 text-sm font-medium transition-colors ${
+            className={`flex-1 flex flex-col sm:flex-row items-center justify-center p-4 text-sm font-bold transition-all ${
               qrType === tab.id
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'border-b-4 border-blue-600 text-blue-700 bg-blue-50/50'
+                : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
             }`}
           >
-            <tab.icon className="h-5 w-5 mr-2" />
-            <span className="hidden sm:inline">{tab.label}</span>
-            <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
+            <tab.icon className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
+            <span>{tab.label}</span>
           </button>
         ))}
       </div>
@@ -301,28 +301,29 @@ const QrCodeGenerator: React.FC = () => {
           case 'text':
               return (
                 <div>
-                  <label htmlFor="qr-text" className="block text-sm font-medium text-gray-700 mb-2">Where should it go?</label>
-                  <input type="text" id="qr-text" value={textData} onChange={(e) => setTextData(e.target.value)} placeholder="Type a website (e.g., google.com) or a message here..." className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"/>
+                  <label htmlFor="qr-text" className="block text-sm font-bold text-gray-800 mb-2">Tampal Link Website Di Sini</label>
+                  <input type="text" id="qr-text" value={textData} onChange={(e) => setTextData(e.target.value)} placeholder="https://contoh-website-anda.com" className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm font-medium"/>
+                  <p className="text-xs text-gray-500 mt-2">*Tips: Masukkan link penuh supaya senang orang scan.</p>
                 </div>
               );
           case 'wifi':
               return (
                   <div className="space-y-4">
-                      <h4 className="font-semibold text-gray-800">Internet Info</h4>
+                      <h4 className="font-bold text-gray-900 text-lg">Bagi Customer Scan Je (Tak Payah Tanya Password)</h4>
                       <div>
-                          <label htmlFor="wifi-ssid" className="block text-sm font-medium text-gray-700 mb-1">Wi-Fi Name (SSID)</label>
-                          <input type="text" id="wifi-ssid" placeholder="e.g. MyHomeWiFi" value={wifiData.ssid} onChange={(e) => setWifiData({...wifiData, ssid: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"/>
+                          <label htmlFor="wifi-ssid" className="block text-sm font-bold text-gray-700 mb-1">Nama WiFi (SSID)</label>
+                          <input type="text" id="wifi-ssid" placeholder="Contoh: KedaiMakan_Guest" value={wifiData.ssid} onChange={(e) => setWifiData({...wifiData, ssid: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 transition"/>
                       </div>
                       <div>
-                          <label htmlFor="wifi-password" className="block text-sm font-medium text-gray-700 mb-1">Wi-Fi Password</label>
-                          <input type="password" id="wifi-password" placeholder="Secret password" value={wifiData.password} onChange={(e) => setWifiData({...wifiData, password: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"/>
+                          <label htmlFor="wifi-password" className="block text-sm font-bold text-gray-700 mb-1">Password WiFi</label>
+                          <input type="text" id="wifi-password" placeholder="Masuk password sini" value={wifiData.password} onChange={(e) => setWifiData({...wifiData, password: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 transition"/>
                       </div>
                       <div>
-                          <label htmlFor="wifi-encryption" className="block text-sm font-medium text-gray-700 mb-1">Security Type</label>
-                          <select id="wifi-encryption" value={wifiData.encryption} onChange={(e) => setWifiData({...wifiData, encryption: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                              <option value="WPA">Standard (WPA/WPA2)</option>
-                              <option value="WEP">Old School (WEP)</option>
-                              <option value="nopass">Open (No Password)</option>
+                          <label htmlFor="wifi-encryption" className="block text-sm font-bold text-gray-700 mb-1">Jenis Security</label>
+                          <select id="wifi-encryption" value={wifiData.encryption} onChange={(e) => setWifiData({...wifiData, encryption: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 transition">
+                              <option value="WPA">Standard (WPA/WPA2) - Paling Biasa</option>
+                              <option value="WEP">Lama (WEP)</option>
+                              <option value="nopass">Open (Tak Ada Password)</option>
                           </select>
                       </div>
                   </div>
@@ -330,40 +331,40 @@ const QrCodeGenerator: React.FC = () => {
           case 'vcard':
               return (
                   <div className="space-y-4">
-                      <h4 className="font-semibold text-gray-800">My Details</h4>
+                      <h4 className="font-bold text-gray-900 text-lg">Kad Nama Digital (Networking Power)</h4>
                       <div>
-                          <label htmlFor="vcard-name" className="block text-sm font-medium text-gray-700 mb-1">My Name</label>
-                          <input type="text" id="vcard-name" placeholder="John Doe" value={vcardData.name} onChange={(e) => setVcardData({...vcardData, name: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"/>
+                          <label htmlFor="vcard-name" className="block text-sm font-bold text-gray-700 mb-1">Nama Penuh</label>
+                          <input type="text" id="vcard-name" placeholder="Ali Baba" value={vcardData.name} onChange={(e) => setVcardData({...vcardData, name: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 transition"/>
                       </div>
                       <div>
-                          <label htmlFor="vcard-phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                          <input type="tel" id="vcard-phone" placeholder="+1 555 123 4567" value={vcardData.phone} onChange={(e) => setVcardData({...vcardData, phone: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"/>
+                          <label htmlFor="vcard-phone" className="block text-sm font-bold text-gray-700 mb-1">Nombor Telefon</label>
+                          <input type="tel" id="vcard-phone" placeholder="+60 12 345 6789" value={vcardData.phone} onChange={(e) => setVcardData({...vcardData, phone: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 transition"/>
                       </div>
                       <div>
-                          <label htmlFor="vcard-email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                          <input type="email" id="vcard-email" placeholder="hello@example.com" value={vcardData.email} onChange={(e) => setVcardData({...vcardData, email: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"/>
+                          <label htmlFor="vcard-email" className="block text-sm font-bold text-gray-700 mb-1">Email</label>
+                          <input type="email" id="vcard-email" placeholder="ali@bisnes.com" value={vcardData.email} onChange={(e) => setVcardData({...vcardData, email: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 transition"/>
                       </div>
                        <div>
-                          <label htmlFor="vcard-company" className="block text-sm font-medium text-gray-700 mb-1">Work Place</label>
-                          <input type="text" id="vcard-company" placeholder="My Cool Company" value={vcardData.company} onChange={(e) => setVcardData({...vcardData, company: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"/>
+                          <label htmlFor="vcard-company" className="block text-sm font-bold text-gray-700 mb-1">Nama Syarikat</label>
+                          <input type="text" id="vcard-company" placeholder="Syarikat Ali Maju Sdn Bhd" value={vcardData.company} onChange={(e) => setVcardData({...vcardData, company: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 transition"/>
                       </div>
                   </div>
               );
            case 'email':
                 return (
                     <div className="space-y-4">
-                        <h4 className="font-semibold text-gray-800">Write an Email</h4>
+                        <h4 className="font-bold text-gray-900 text-lg">Setup Email Automatik</h4>
                         <div>
-                            <label htmlFor="email-to" className="block text-sm font-medium text-gray-700 mb-1">Send to (Email)</label>
-                            <input type="email" id="email-to" placeholder="friend@example.com" value={emailData.to} onChange={(e) => setEmailData({ ...emailData, to: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+                            <label htmlFor="email-to" className="block text-sm font-bold text-gray-700 mb-1">Hantar Kepada (Email)</label>
+                            <input type="email" id="email-to" placeholder="sales@syarikat.com" value={emailData.to} onChange={(e) => setEmailData({ ...emailData, to: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 transition" />
                         </div>
                         <div>
-                            <label htmlFor="email-subject" className="block text-sm font-medium text-gray-700 mb-1">Subject (Title)</label>
-                            <input type="text" id="email-subject" placeholder="Hello!" value={emailData.subject} onChange={(e) => setEmailData({ ...emailData, subject: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+                            <label htmlFor="email-subject" className="block text-sm font-bold text-gray-700 mb-1">Tajuk Email</label>
+                            <input type="text" id="email-subject" placeholder="Pertanyaan Produk" value={emailData.subject} onChange={(e) => setEmailData({ ...emailData, subject: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 transition" />
                         </div>
                         <div>
-                            <label htmlFor="email-body" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                            <textarea id="email-body" placeholder="Type your message here..." value={emailData.body} onChange={(e) => setEmailData({ ...emailData, body: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+                            <label htmlFor="email-body" className="block text-sm font-bold text-gray-700 mb-1">Isi Mesej</label>
+                            <textarea id="email-body" placeholder="Saya berminat nak beli..." value={emailData.body} onChange={(e) => setEmailData({ ...emailData, body: e.target.value })} rows={3} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 transition" />
                         </div>
                     </div>
                 );
@@ -371,24 +372,24 @@ const QrCodeGenerator: React.FC = () => {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-0 md:p-0 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+    <div className="bg-white rounded-3xl shadow-2xl p-0 overflow-hidden grid grid-cols-1 lg:grid-cols-2 border border-gray-100">
       {/* Left Side: Controls */}
-      <div className="flex flex-col">
+      <div className="flex flex-col bg-white">
         {renderTabs()}
-        <div className="p-6 space-y-6">
-            <div className="min-h-[250px]">{renderForm()}</div>
+        <div className="p-6 md:p-8 space-y-8">
+            <div className="min-h-[220px]">{renderForm()}</div>
 
-            <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                    <PaintBrushIcon className="h-5 w-5 mr-2" />
-                    Make it Pretty
+            <div className="border-t border-gray-100 pt-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-5 flex items-center">
+                    <PaintBrushIcon className="h-6 w-6 mr-2 text-blue-600" />
+                    Biar Nampak Mahal (Design)
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Pick a Color Combo</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-3">Pilih Tema Warna (Fast)</label>
                         <div className="flex flex-wrap gap-2">
                             {colorPalettes.map(p => (
-                                <button key={p.name} onClick={() => applyPalette(p)} className="h-8 px-3 text-sm rounded-full border shadow-sm hover:shadow-md transition-shadow" style={{backgroundColor: p.light, color: p.dark, borderColor: p.dark}}>
+                                <button key={p.name} onClick={() => applyPalette(p)} className="h-9 px-4 text-xs font-bold rounded-full border border-gray-200 shadow-sm hover:scale-105 active:scale-95 transition-all" style={{backgroundColor: p.light, color: p.dark, borderColor: p.dark}}>
                                     {p.name}
                                 </button>
                             ))}
@@ -396,76 +397,77 @@ const QrCodeGenerator: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="qr-color-dark" className="block text-sm font-medium text-gray-700 mb-1">Code Color</label>
-                            <input id="qr-color-dark" type="color" value={options.color.dark} onChange={(e) => handleColorChange('dark', e.target.value)} disabled={gradient.enabled} className="w-full h-10 p-1 bg-white border border-gray-300 rounded-md cursor-pointer disabled:opacity-50"/>
+                            <label htmlFor="qr-color-dark" className="block text-sm font-semibold text-gray-700 mb-1">Warna Kod</label>
+                            <input id="qr-color-dark" type="color" value={options.color.dark} onChange={(e) => handleColorChange('dark', e.target.value)} disabled={gradient.enabled} className="w-full h-12 p-1 bg-white border border-gray-300 rounded-lg cursor-pointer disabled:opacity-50"/>
                         </div>
                         <div>
-                            <label htmlFor="qr-color-light" className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
-                            <input id="qr-color-light" type="color" value={options.color.light} onChange={(e) => handleColorChange('light', e.target.value)} className="w-full h-10 p-1 bg-white border border-gray-300 rounded-md cursor-pointer"/>
+                            <label htmlFor="qr-color-light" className="block text-sm font-semibold text-gray-700 mb-1">Warna Belakang</label>
+                            <input id="qr-color-light" type="color" value={options.color.light} onChange={(e) => handleColorChange('light', e.target.value)} className="w-full h-12 p-1 bg-white border border-gray-300 rounded-lg cursor-pointer"/>
                         </div>
                     </div>
-                    <div className="p-3 rounded-md bg-gray-50 border border-gray-100">
+                    
+                    <div className="p-4 rounded-xl bg-blue-50 border border-blue-100">
                         <div className="flex items-center justify-between">
-                            <label className="flex items-center text-sm font-medium text-gray-700">
-                                <SparklesIcon className="h-5 w-5 mr-2 text-blue-500"/>
-                                Mix Colors (Gradient)
+                            <label className="flex items-center text-sm font-bold text-gray-800">
+                                <SparklesIcon className="h-5 w-5 mr-2 text-blue-600"/>
+                                Nak Warna Gradient? (Baru Nampak Pro)
                             </label>
                             <label htmlFor="gradient-toggle" className="inline-flex relative items-center cursor-pointer">
                               <input type="checkbox" id="gradient-toggle" className="sr-only peer" checked={gradient.enabled} onChange={(e) => handleGradientChange('enabled', e.target.checked)} />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                              <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                             </label>
                         </div>
                         {gradient.enabled && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-                                <div><input type="color" value={gradient.color1} onChange={(e) => handleGradientChange('color1', e.target.value)} className="w-full h-10 p-1 bg-white border border-gray-300 rounded-md cursor-pointer"/></div>
-                                <div><input type="color" value={gradient.color2} onChange={(e) => handleGradientChange('color2', e.target.value)} className="w-full h-10 p-1 bg-white border border-gray-300 rounded-md cursor-pointer"/></div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                <div><input type="color" value={gradient.color1} onChange={(e) => handleGradientChange('color1', e.target.value)} className="w-full h-10 p-1 bg-white border border-gray-300 rounded-lg cursor-pointer"/></div>
+                                <div><input type="color" value={gradient.color2} onChange={(e) => handleGradientChange('color2', e.target.value)} className="w-full h-10 p-1 bg-white border border-gray-300 rounded-lg cursor-pointer"/></div>
                             </div>
                         )}
                     </div>
-                     <div className="pt-2">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Shapes & Size</h4>
+
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                          <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Dot Shape</label>
-                                <div className="flex items-center space-x-4 mt-1">
-                                    <label className="flex items-center cursor-pointer"><input type="radio" name="dotStyle" value="squares" checked={dotStyle === 'squares'} onChange={() => setDotStyle('squares')} className="mr-2"/> Squares</label>
-                                    <label className="flex items-center cursor-pointer"><input type="radio" name="dotStyle" value="dots" checked={dotStyle === 'dots'} onChange={() => setDotStyle('dots')} className="mr-2"/> Round Dots</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Bentuk Titik</label>
+                                <div className="flex bg-gray-100 p-1 rounded-lg">
+                                    <button onClick={() => setDotStyle('squares')} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${dotStyle === 'squares' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>Kotak</button>
+                                    <button onClick={() => setDotStyle('dots')} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${dotStyle === 'dots' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>Bulat</button>
                                 </div>
                             </div>
                             <div>
-                                <label htmlFor="qr-size" className="block text-sm font-medium text-gray-700">How Big? ({options.width}px)</label>
-                                <input id="qr-size" type="range" min="128" max="512" step="16" value={options.width} onChange={(e) => handleOptionChange('width', parseInt(e.target.value, 10))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2"/>
-                            </div>
-                            <div>
-                                <label htmlFor="qr-error-level" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Safety Level
-                                    <span className="text-xs text-gray-400 font-normal ml-2">(Helps if code gets blurry)</span>
+                                <label htmlFor="qr-error-level" className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Tahap Kerosakan
                                 </label>
-                                <select id="qr-error-level" value={options.errorCorrectionLevel} onChange={(e) => handleOptionChange('errorCorrectionLevel', e.target.value as QROptions['errorCorrectionLevel'])} className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                                    <option value="L">Low (Clearer)</option>
-                                    <option value="M">Medium (Standard)</option>
-                                    <option value="Q">High (Better)</option>
-                                    <option value="H">Best (Super Strong)</option>
+                                <select id="qr-error-level" value={options.errorCorrectionLevel} onChange={(e) => handleOptionChange('errorCorrectionLevel', e.target.value as QROptions['errorCorrectionLevel'])} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 transition">
+                                    <option value="L">Rendah (Paling Jelas)</option>
+                                    <option value="M">Sederhana (Standard)</option>
+                                    <option value="Q">Tinggi (Bagus)</option>
+                                    <option value="H">Paling Tinggi (Tahan Lasak)</option>
                                 </select>
                             </div>
                          </div>
-                     </div>
-                     <div className="pt-2">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Middle Sticker</h4>
-                        <input type="file" accept="image/*" ref={logoInputRef} onChange={handleLogoUpload} className="hidden" />
-                        {logo ? (
-                            <div className="flex items-center space-x-3">
-                                <img src={logo} alt="Logo preview" className="w-12 h-12 rounded object-cover border"/>
-                                <button onClick={() => setLogo(null)} className="flex items-center text-sm text-red-600 hover:text-red-800">
-                                    <TrashIcon className="h-4 w-4 mr-1"/> Remove Sticker
+                         
+                         <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Logo Tengah (Optional)</label>
+                            <input type="file" accept="image/*" ref={logoInputRef} onChange={handleLogoUpload} className="hidden" />
+                            {logo ? (
+                                <div className="flex items-center justify-between p-2 border rounded-lg bg-gray-50">
+                                    <img src={logo} alt="Logo preview" className="w-10 h-10 rounded object-cover border bg-white"/>
+                                    <button onClick={() => setLogo(null)} className="text-xs font-bold text-red-600 hover:text-red-800 px-2 py-1">
+                                        Buang
+                                    </button>
+                                </div>
+                            ) : (
+                                <button onClick={() => logoInputRef.current?.click()} className="w-full h-[76px] flex flex-col items-center justify-center px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-50 hover:border-blue-400 hover:text-blue-600 transition">
+                                    <ArrowUpTrayIcon className="h-5 w-5 mb-1" />
+                                    Upload Logo
                                 </button>
+                            )}
+                             <div className="mt-4">
+                                <label htmlFor="qr-size" className="block text-sm font-semibold text-gray-700 flex justify-between"><span>Saiz</span> <span className="text-gray-400 font-normal">{options.width}px</span></label>
+                                <input id="qr-size" type="range" min="128" max="512" step="16" value={options.width} onChange={(e) => handleOptionChange('width', parseInt(e.target.value, 10))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2"/>
                             </div>
-                        ) : (
-                            <button onClick={() => logoInputRef.current?.click()} className="w-full flex items-center justify-center px-4 py-2 border border-dashed border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
-                                <ArrowUpTrayIcon className="h-5 w-5 mr-2" />
-                                Upload Logo Image
-                            </button>
-                        )}
+                         </div>
                      </div>
                 </div>
             </div>
@@ -473,31 +475,35 @@ const QrCodeGenerator: React.FC = () => {
       </div>
 
       {/* Right Side: QR Code Display */}
-      <div className="flex flex-col items-center justify-center bg-gray-100 p-6 rounded-b-2xl lg:rounded-r-2xl lg:rounded-bl-none">
-        <div className="relative w-full max-w-xs aspect-square flex items-center justify-center">
-            {isLoading && (
-                <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg z-10">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                </div>
-            )}
-            <canvas ref={qrCanvasRef} className="rounded-md shadow-md"/>
-            {!qrString && (
-                 <div className="absolute inset-0 w-full h-full bg-gray-200 rounded-md flex flex-col items-center justify-center text-center p-4">
-                    <QrCodeIcon className="h-16 w-16 text-gray-400 mb-4" />
-                    <p className="text-gray-500">Start typing to see magic!</p>
-                </div>
-            )}
+      <div className="flex flex-col items-center justify-center bg-gray-50/50 p-8 border-t lg:border-t-0 lg:border-l border-gray-100">
+        <div className="text-center mb-6">
+            <h3 className="text-2xl font-black text-gray-900">Hasilnya</h3>
+            <p className="text-gray-500 text-sm">Preview automatik setiap kali anda taip.</p>
         </div>
-        <div className="mt-8 w-full max-w-xs space-y-3">
-            <button onClick={() => handleDownload('png')} disabled={!qrString || isLoading} className="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition">
-                <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
-                Save Image (PNG)
+        
+        <div className="relative p-4 bg-white rounded-xl shadow-lg border border-gray-100 mb-8 transform transition-transform hover:scale-105 duration-300">
+            <div className="relative">
+                {isLoading && (
+                    <div className="absolute inset-0 bg-white/90 flex items-center justify-center rounded z-10">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-4 border-blue-600"></div>
+                    </div>
+                )}
+                <canvas ref={qrCanvasRef} className="rounded max-w-full"/>
+            </div>
+        </div>
+
+        <div className="w-full max-w-xs space-y-3">
+            <button onClick={() => handleDownload('png')} disabled={!qrString || isLoading} className="w-full group relative inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all transform active:scale-95">
+                <ArrowDownTrayIcon className="h-6 w-6 mr-2 group-hover:animate-bounce" />
+                Simpan (PNG) - Percuma
             </button>
-             <button onClick={() => handleDownload('svg')} disabled={!qrString || isLoading} className="w-full inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:text-gray-600 disabled:cursor-not-allowed transition">
-                <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
-                Save Vector (SVG)
+             <button onClick={() => handleDownload('svg')} disabled={!qrString || isLoading} className="w-full inline-flex items-center justify-center px-6 py-3 border-2 border-gray-200 text-sm font-bold rounded-xl text-gray-600 bg-white hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                Download Vector (SVG)
             </button>
         </div>
+        <p className="mt-6 text-xs text-gray-400 text-center max-w-xs">
+            100% High Resolution. Boleh guna untuk print billboard, baju, atau letak di kaunter kedai.
+        </p>
       </div>
     </div>
   );
